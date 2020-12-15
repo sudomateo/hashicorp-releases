@@ -1,4 +1,4 @@
-APPNAME ?= "hashicorp-releases"
+APPNAME ?= hashicorp-releases
 GOBIN ?= $(HOME)/go/bin
 REVISION ?= $(shell git rev-parse --short HEAD)
 
