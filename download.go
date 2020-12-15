@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"path"
 	"runtime"
 
 	"github.com/mitchellh/cli"
@@ -29,11 +28,13 @@ func (l *downloadCommand) Run(args []string) int {
 	}
 	product := args[0]
 	version := args[1]
+
 	productURL, err := url.Parse(hcrelease.ReleasesURL)
 	if err != nil {
 		return 1
 	}
-	productURL.Path = path.Join("index.json")
+	productURL.Path = "index.json"
+
 	products, err := hcrelease.GetProducts(productURL.String())
 	if err != nil {
 		log.Printf("failed to retrieve product details: %v", err)
@@ -74,5 +75,5 @@ func (l *downloadCommand) Run(args []string) int {
 }
 
 func (l *downloadCommand) Synopsis() string {
-	return "Synopsis called for download subcommand"
+	return "Download a product build"
 }
