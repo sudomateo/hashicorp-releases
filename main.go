@@ -25,9 +25,9 @@ func main() {
 	cli := &cli.CLI{
 		Args: os.Args[1:],
 		Commands: map[string]cli.CommandFactory{
-			"":         defaultCommandFactory,
 			"list":     listCommandFactory,
 			"download": downloadCommandFactory,
+			"install":  installCommandFactory,
 		},
 		Name:         "hashicorp-releases",
 		Version:      cliVersion,
@@ -42,45 +42,4 @@ func main() {
 		log.Println(err)
 	}
 	os.Exit(exitStatus)
-}
-
-func defaultCommandFactory() (cli.Command, error) {
-	var d defaultCommand
-	return &d, nil
-}
-
-type defaultCommand struct{}
-
-func (d *defaultCommand) Help() string {
-	return "Help called for default subcommand"
-}
-
-func (d *defaultCommand) Run(args []string) int {
-	log.Println("Run called for default subcommand")
-	log.Println(args)
-	return 0
-}
-
-func (d *defaultCommand) Synopsis() string {
-	return "Synopsis called for default subcommand"
-}
-
-func listCommandFactory() (cli.Command, error) {
-	var l listCommand
-	return &l, nil
-}
-
-type listCommand struct{}
-
-func (l *listCommand) Help() string {
-	return "Help called for list subcommand"
-}
-
-func (l *listCommand) Run(args []string) int {
-	log.Println("Run called for list subcommand")
-	return 0
-}
-
-func (l *listCommand) Synopsis() string {
-	return "Synopsis called for list subcommand"
 }
