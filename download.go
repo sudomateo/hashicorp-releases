@@ -18,7 +18,7 @@ func downloadCommandFactory() (cli.Command, error) {
 type downloadCommand struct{}
 
 func (l *downloadCommand) Help() string {
-	return "Help called for download subcommand"
+	return "download PRODUCT VERSION"
 }
 
 func (l *downloadCommand) Run(args []string) int {
@@ -75,5 +75,5 @@ func (l *downloadCommand) Run(args []string) int {
 }
 
 func (l *downloadCommand) Synopsis() string {
-	return "Download a product build"
+	return "Download a specific version of a product."
 }

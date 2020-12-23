@@ -10,7 +10,7 @@ import (
 
 var (
 	// AppVersion is the version of this application.
-	AppVersion string = "0.0.1"
+	AppVersion string = "0.2.0"
 
 	// AppRevision is the source control revision for this application.
 	AppRevision string = ""
@@ -28,6 +28,7 @@ func main() {
 			"list":     listCommandFactory,
 			"download": downloadCommandFactory,
 			"install":  installCommandFactory,
+			"use":      useCommandFactory,
 		},
 		Name:         "hashicorp-releases",
 		Version:      cliVersion,

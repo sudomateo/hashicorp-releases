@@ -20,7 +20,7 @@ func listCommandFactory() (cli.Command, error) {
 type listCommand struct{}
 
 func (l *listCommand) Help() string {
-	return "Help called for list subcommand"
+	return "list"
 }
 
 func (l *listCommand) Run(args []string) int {
@@ -45,5 +45,5 @@ func (l *listCommand) Run(args []string) int {
 }
 
 func (l *listCommand) Synopsis() string {
-	return "List the available products"
+	return "List the available products."
 }

@@ -16,18 +16,29 @@ import (
 	"github.com/sudomateo/hashicorp-releases/pkg/hcrelease"
 )
 
-func installCommandFactory() (cli.Command, error) {
-	var i installCommand
+func fileExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
+func useCommandFactory() (cli.Command, error) {
+	var i useCommand
 	return &i, nil
 }
 
-type installCommand struct{}
+type useCommand struct{}
 
-func (l *installCommand) Help() string {
-	return "install PRODUCT VERSION"
+func (l *useCommand) Help() string {
+	return "use PRODUCT VERSION"
 }
 
-func (l *installCommand) Run(args []string) int {
+func (l *useCommand) Run(args []string) int {
 	if len(args) < 2 {
 		log.Print("must provide at least 2 arguments")
 		return 1
@@ -104,6 +115,8 @@ func (l *installCommand) Run(args []string) int {
 	}
 	defer zipReader.Close()
 
+	fileName := fmt.Sprintf("%s_%s", build.Name, build.Version)
+	outPath := filepath.Join(dataDir, fileName)
 	for _, f := range zipReader.File {
 		if f.Name == build.Name {
 			rc, err := f.Open()
@@ -113,8 +126,6 @@ func (l *installCommand) Run(args []string) int {
 			}
 			defer rc.Close()
 
-			fileName := fmt.Sprintf("%s_%s", build.Name, build.Version)
-			outPath := filepath.Join(dataDir, fileName)
 			outFile, err := os.Create(outPath)
 			if err != nil {
 				log.Printf("failed to create file: %v", err)
@@ -135,9 +146,33 @@ func (l *installCommand) Run(args []string) int {
 		}
 	}
 
+	symlinkDir := filepath.Join(homeDir, ".local/bin")
+	if err := os.MkdirAll(symlinkDir, 0755); err != nil {
+		log.Printf("failed to create symlink directory: %v", err)
+		return 1
+	}
+
+	symlinkPath := filepath.Join(symlinkDir, build.Name)
+	exists, err := fileExists(symlinkPath)
+	if err != nil {
+		log.Printf("failed to check for file existence: %v", err)
+		return 1
+	}
+	if exists {
+		if err := os.Remove(symlinkPath); err != nil {
+			log.Printf("failed to remove file: %v", err)
+			return 1
+		}
+	}
+
+	if err := os.Symlink(outPath, symlinkPath); err != nil {
+		log.Printf("failed to create symlink: %v", err)
+		return 1
+	}
+
 	return 0
 }
 
-func (l *installCommand) Synopsis() string {
-	return "Install a specific version of a product."
+func (l *useCommand) Synopsis() string {
+	return "Use a specific version of a product."
 }
