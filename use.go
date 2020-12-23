@@ -16,6 +16,7 @@ import (
 	"github.com/sudomateo/hashicorp-releases/pkg/hcrelease"
 )
 
+// fileExists checks whether or not a file exists.
 func fileExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -27,20 +28,26 @@ func fileExists(path string) (bool, error) {
 	return false, err
 }
 
+// useCommandFactory is the factory that produces the use command.
 func useCommandFactory() (cli.Command, error) {
 	var i useCommand
 	return &i, nil
 }
 
+// useCommand is a blank struct that satisfies the cli.Command interface.
 type useCommand struct{}
 
-func (l *useCommand) Help() string {
-	return "use PRODUCT VERSION"
+// Help prints help text for the use command.
+func (u *useCommand) Help() string {
+	help := `Usage: hashicorp-releases use <product> <version>`
+	return help
 }
 
-func (l *useCommand) Run(args []string) int {
+// Run runs the use command.
+func (u *useCommand) Run(args []string) int {
 	if len(args) < 2 {
-		log.Print("must provide at least 2 arguments")
+		fmt.Println("The use command expects exactly two arguments.")
+		fmt.Printf("%s\n", u.Help())
 		return 1
 	}
 	product := args[0]
@@ -173,6 +180,7 @@ func (l *useCommand) Run(args []string) int {
 	return 0
 }
 
-func (l *useCommand) Synopsis() string {
+// Synopsis prints a one-liner about the use command.
+func (u *useCommand) Synopsis() string {
 	return "Use a specific version of a product."
 }

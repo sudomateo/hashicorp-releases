@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"os"
 	"os/user"
@@ -16,20 +15,26 @@ import (
 	"github.com/sudomateo/hashicorp-releases/pkg/hcrelease"
 )
 
+// installCommandFactory is the factory that produces the install command.
 func installCommandFactory() (cli.Command, error) {
 	var i installCommand
 	return &i, nil
 }
 
+// installCommand is a blank struct that satisfies the cli.Command interface.
 type installCommand struct{}
 
-func (l *installCommand) Help() string {
-	return "install PRODUCT VERSION"
+// Help prints help text for the install command.
+func (i *installCommand) Help() string {
+	help := `Usage: hashicorp-releases install <product> <version>`
+	return help
 }
 
-func (l *installCommand) Run(args []string) int {
+// Run runs the install command.
+func (i *installCommand) Run(args []string) int {
 	if len(args) < 2 {
-		log.Print("must provide at least 2 arguments")
+		fmt.Println("The install command expects exactly two arguments.")
+		fmt.Printf("%s\n", i.Help())
 		return 1
 	}
 	product := args[0]
@@ -37,14 +42,14 @@ func (l *installCommand) Run(args []string) int {
 
 	user, err := user.Current()
 	if err != nil {
-		log.Printf("failed to retrieve home directory: %v", err)
+		fmt.Printf("failed to retrieve home directory: %v", err)
 		return 1
 	}
 	homeDir := user.HomeDir
 
 	dataDir := filepath.Join(homeDir, ".local/share/hashicorp-releases")
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		log.Printf("failed to create data directory: %v", err)
+		fmt.Printf("failed to create data directory: %v", err)
 		return 1
 	}
 
@@ -56,50 +61,50 @@ func (l *installCommand) Run(args []string) int {
 
 	products, err := hcrelease.GetProducts(productURL.String())
 	if err != nil {
-		log.Printf("failed to retrieve product details: %v", err)
+		fmt.Printf("failed to retrieve product details: %v", err)
 		return 1
 	}
 
 	release, err := products.GetRelease(product)
 	if err != nil {
-		log.Printf("failed to retrieve release details: %v", err)
+		fmt.Printf("failed to retrieve release details: %v", err)
 		return 1
 	}
 
 	ver, err := release.GetVersion(version)
 	if err != nil {
-		log.Printf("failed to retrieve version details: %v", err)
+		fmt.Printf("failed to retrieve version details: %v", err)
 		return 1
 	}
 
 	build, err := ver.GetBuild(runtime.GOOS, runtime.GOARCH)
 	if err != nil {
-		log.Printf("failed to retrieve build details: %v", err)
+		fmt.Printf("failed to retrieve build details: %v", err)
 		return 1
 	}
 
 	tmpfile, err := ioutil.TempFile(dataDir, "terraform")
 	if err != nil {
-		log.Printf("failed to create temporary directory: %v", err)
+		fmt.Printf("failed to create temporary directory: %v", err)
 		return 1
 	}
 	defer os.Remove(tmpfile.Name())
 
 	err = build.Download(tmpfile)
 	if err != nil {
-		log.Printf("failed to download build: %v", err)
+		fmt.Printf("failed to download build: %v", err)
 		return 1
 	}
 
 	ext := filepath.Ext(build.Filename)
 	if ext != ".zip" {
-		log.Printf("invalid file extenstion %s: %v", ext, err)
+		fmt.Printf("invalid file extenstion %s: %v", ext, err)
 		return 1
 	}
 
 	zipReader, err := zip.OpenReader(tmpfile.Name())
 	if err != nil {
-		log.Printf("failed to open zip reader: %v", err)
+		fmt.Printf("failed to open zip reader: %v", err)
 		return 1
 	}
 	defer zipReader.Close()
@@ -108,7 +113,7 @@ func (l *installCommand) Run(args []string) int {
 		if f.Name == build.Name {
 			rc, err := f.Open()
 			if err != nil {
-				log.Printf("failed to open file: %v", err)
+				fmt.Printf("failed to open file: %v", err)
 				return 1
 			}
 			defer rc.Close()
@@ -117,18 +122,18 @@ func (l *installCommand) Run(args []string) int {
 			outPath := filepath.Join(dataDir, fileName)
 			outFile, err := os.Create(outPath)
 			if err != nil {
-				log.Printf("failed to create file: %v", err)
+				fmt.Printf("failed to create file: %v", err)
 				return 1
 			}
 			if err := outFile.Chmod(0755); err != nil {
-				log.Printf("failed to chmod file: %v", err)
+				fmt.Printf("failed to chmod file: %v", err)
 				return 1
 			}
 			defer outFile.Close()
 
 			_, err = io.Copy(outFile, rc)
 			if err != nil {
-				log.Printf("failed to copy file: %v", err)
+				fmt.Printf("failed to copy file: %v", err)
 				return 1
 			}
 			break
@@ -138,6 +143,7 @@ func (l *installCommand) Run(args []string) int {
 	return 0
 }
 
-func (l *installCommand) Synopsis() string {
+// Synopsis prints a one-liner about the install command.
+func (i *installCommand) Synopsis() string {
 	return "Install a specific version of a product."
 }

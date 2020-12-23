@@ -9,6 +9,9 @@ import (
 )
 
 var (
+	// AppName is the name of the application.
+	AppName string = "hashicorp-releases"
+
 	// AppVersion is the version of this application.
 	AppVersion string = "0.2.0"
 
@@ -16,6 +19,7 @@ var (
 	AppRevision string = ""
 )
 
+// main is the entrypoint for this application.
 func main() {
 	cliVersion := fmt.Sprintf("%s", AppVersion)
 	if AppRevision != "" {
@@ -30,10 +34,10 @@ func main() {
 			"install":  installCommandFactory,
 			"use":      useCommandFactory,
 		},
-		Name:         "hashicorp-releases",
+		Name:         AppName,
 		Version:      cliVersion,
 		Autocomplete: true,
-		HelpFunc:     cli.BasicHelpFunc("hashicorp-releases"),
+		HelpFunc:     cli.BasicHelpFunc(AppName),
 		HelpWriter:   os.Stdout,
 		ErrorWriter:  os.Stderr,
 	}
